@@ -1,0 +1,111 @@
+resources:
+- repo: self
+queue:
+  name: Default
+  demands: 
+  - npm
+  - node.js
+
+  timeoutInMinutes: 30
+
+#Your build pipeline references a secret variable named ‘passwordFTP’. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab, and then select the option to make it secret. See https://go.microsoft.com/fwlink/?linkid=865972
+#Your build pipeline references a secret variable named ‘passwordFTP’. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab, and then select the option to make it secret. See https://go.microsoft.com/fwlink/?linkid=865972
+steps:
+- task: Npm@1
+  displayName: 'npm install'
+  inputs:
+    verbose: true
+
+
+- task: Gulp@0
+  displayName: 'Run Gulp'
+  inputs:
+    targets: deploy
+
+  timeoutInMinutes: 20
+
+- task: FtpUpload@1
+  displayName: 'Upload to Server'
+  inputs:
+    credentialsOption: inputs
+
+    serverUrl: 'ftp://hegel.timeweb.ru'
+
+    username: 'bezrukovyra_dev'
+
+    password: '$(passwordFTP)'
+
+    rootDirectory: '$/SiteToExample/deploy'
+
+    remoteDirectory: '/public_html/'
+
+    clean: true
+
+    preservePaths: true
+
+    trustSSL: true
+
+  timeoutInMinutes: 10
+
+- powershell: |
+   backstop test
+   
+  errorActionPreference: continue
+
+  ignoreLASTEXITCODE: true
+
+  workingDirectory: '$/SiteToExample'
+
+  displayName: 'Screenshot based tests'
+  continueOnError: true
+  timeoutInMinutes: 10
+
+- task: FtpUpload@1
+  displayName: 'Upload screenshots to web'
+  inputs:
+    credentialsOption: inputs
+
+    serverUrl: 'ftp://hegel.timeweb.ru'
+
+    username: 'bezrukovyra_dev'
+
+    password: '$(passwordFTP)'
+
+    rootDirectory: '$/SiteToExample/backstop_data'
+
+    remoteDirectory: '/public_html/backstop_data'
+
+    cleanContents: true
+
+    preservePaths: true
+
+    trustSSL: true
+
+  timeoutInMinutes: 10
+
+- task: DeleteFiles@1
+  displayName: 'Delete local old screenshots'
+  inputs:
+    SourceFolder: '$/SiteToExample/backstop_data'
+
+    Contents: 'bitmaps_test*'
+
+
+- task: EvgenyChernyi.telegram-notification-extension.sample-telegram-task.SendTelegramNotification@0
+  displayName: 'Telegram Notification'
+  inputs:
+    botToken: '673247526:AAG3HOywsy_SBmebGENKYEh2Mi2ypgkluxw'
+
+    chats: '-1001322511327'
+
+    teamUrl: true
+
+    message: 'Site Build. http://dev.lab-27.ru/backstop_data/html_report/index.html'
+
+    buildNumber: true
+
+    buildQueuedBy: true
+
+  timeoutInMinutes: 3
+
+
