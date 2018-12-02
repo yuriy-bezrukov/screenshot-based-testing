@@ -1,0 +1,26 @@
+{
+  "name": "www",
+  "author": "bezrukovyra",
+  "description": "blank project",
+  "version": "0.0.1",
+  "scripts": {
+    "preinstall": "npm i -g gulp backstopjs"
+  },
+  "dependencies": {
+    "gulp": "latest",
+    "puppeteer": "latest",
+    "file-system": "latest"
+  },
+  "devDependencies": {
+    "less": "latest",
+    "gulp-less": "latest",
+    "less-plugin-autoprefix": "latest",
+    "typescript": "latest",
+    "gulp-typescript": "latest",
+    "jquery": "latest",
+    "@types/jquery": "latest",
+    "gulp-concat": "latest",
+    "gulp-copy": "latest",
+    "del": "latest"
+  }
+}
